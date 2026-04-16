@@ -36,3 +36,11 @@ model Settings {
   logoUrl        String @default("")
   masterPasscode String @default("AmanZone2026") 
 }
+model Settings {
+  id             String @id @default("default")
+  storeName      String
+  slogan         String
+  logoUrl        String
+  masterPasscode String
+  heroHeading    String @default("YOUR RELIABLE SOURCE OF...")
+}
