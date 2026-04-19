@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 import { useState, useEffect } from 'react';
 import { Receipt, CheckCircle, ShieldAlert } from 'lucide-react';
 import { approveOrder } from '../actions';
