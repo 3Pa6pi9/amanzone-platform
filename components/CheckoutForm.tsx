@@ -1,41 +1,23 @@
-// /components/CheckoutForm.tsx
+'use client';
 import { useState } from 'react';
 
-interface CheckoutProps {
-  onProceed: (details: any) => void;
-}
-
-export default function CheckoutForm({ onProceed }: CheckoutProps) {
-  const [customerDetails, setCustomerDetails] = useState({
-    name: '', phone: '', city: '', address: ''
-  });
+export default function CheckoutForm({ total, onComplete }: { total: number, onComplete: (data: any) => void }) {
+  const [details, setDetails] = useState({ name: '', phone: '', city: '', address: '' });
 
   return (
-    <div className="bg-[#0f172a] border border-gray-700 p-6 rounded-lg w-full max-w-md mx-auto mt-10">
-      <h3 className="text-white text-xl font-bold mb-4 uppercase">Delivery Details</h3>
-      
-      <div className="flex flex-col gap-4">
-        <input 
-          className="bg-transparent border border-gray-600 p-3 text-white rounded outline-none focus:border-orange-500"
-          placeholder="Full Name (Residence)" 
-          onChange={e => setCustomerDetails({...customerDetails, name: e.target.value})} 
-        />
-        <input 
-           className="bg-transparent border border-gray-600 p-3 text-white rounded outline-none focus:border-orange-500"
-          placeholder="Phone Number" 
-          onChange={e => setCustomerDetails({...customerDetails, phone: e.target.value})} 
-        />
-        <input 
-           className="bg-transparent border border-gray-600 p-3 text-white rounded outline-none focus:border-orange-500"
-          placeholder="City" 
-          onChange={e => setCustomerDetails({...customerDetails, city: e.target.value})} 
-        />
-        
-        <button 
-          className="mt-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold py-3 px-4 rounded transition-transform active:scale-95"
-          onClick={() => onProceed(customerDetails)}
-        >
-          PROCEED TO SECURE DEPOSIT
+    <div className="bg-[#111] p-6 rounded-lg border border-gray-800 shadow-2xl">
+      <h2 className="text-white font-bold text-xl mb-4">DELIVERY DETAILS</h2>
+      <div className="space-y-3">
+        <input className="w-full bg-black border border-gray-700 p-3 text-white rounded" placeholder="Your Name" onChange={e => setDetails({...details, name: e.target.value})} />
+        <input className="w-full bg-black border border-gray-700 p-3 text-white rounded" placeholder="Phone Number" onChange={e => setDetails({...details, phone: e.target.value})} />
+        <input className="w-full bg-black border border-gray-700 p-3 text-white rounded" placeholder="City" onChange={e => setDetails({...details, city: e.target.value})} />
+        <input className="w-full bg-black border border-gray-700 p-3 text-white rounded" placeholder="Residence Name / Specific Address" onChange={e => setDetails({...details, address: e.target.value})} />
+        <div className="pt-4 border-t border-gray-800 flex justify-between items-center text-white">
+          <span>Total Deposit:</span>
+          <span className="text-green-400 font-bold">{total} ETB</span>
+        </div>
+        <button onClick={() => onComplete(details)} className="w-full bg-gradient-to-r from-orange-600 to-pink-600 py-3 rounded font-bold text-white uppercase mt-2">
+          Confirm Details & Pay
         </button>
       </div>
     </div>

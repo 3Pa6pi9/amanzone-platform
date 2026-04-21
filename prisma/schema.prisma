@@ -1,24 +1,32 @@
-// /prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
 
-// ... your existing generator and datasource blocks ...
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  name      String
+  type      String
+  value     Float
+  imageUrl  String?
+  createdAt DateTime @default(now())
+}
 
 model Order {
   id           String   @id @default(cuid())
-  // ... your existing fields (productId, amount, etc.) ...
+  productName  String
+  amount       Float
+  status       String   @default("pending")
   
-  // New fields required for the missing checkout flow
+  // Missing Fields Added:
   customerName String?
   phone        String?
   city         String?
   address      String?
   
   createdAt    DateTime @default(now())
-}
-
-model Product {
-  id          String   @id @default(cuid())
-  name        String
-  type        String
-  value       Float
-  imageUrl    String?  // Ensure this exists to save the uploaded image link
 }
