@@ -1,13 +1,13 @@
-// VERCEL PRODUCTION BYPASS - SINGLE DYNAMIC EXPORT
+// VERCEL & RENDER PRODUCTION BYPASS - SINGLE DYNAMIC EXPORT
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// 1. The POST function (Creates orders from the storefront)
+// 1. POST: Creates orders from the storefront
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { amount, items, transactionId, quantity, city, subcity, residence, phone } = body;
+    const { amount, items, transactionId, quantity, city, subcity, residence, phone, deliveryMethod } = body;
 
     const order = await prisma.order.create({
       data: {
@@ -19,7 +19,8 @@ export async function POST(req: Request) {
         city: city,
         subcity: subcity,
         residence: residence,
-        phoneNumber: phone
+        phoneNumber: phone,
+        deliveryMethod: deliveryMethod
       }
     });
 
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
   }
 }
 
-// 2. The GET function (Retrieves orders for the Admin Dashboard)
+// 2. GET: Retrieves orders for the Admin Dashboard
 export async function GET() {
   try {
     const orders = await prisma.order.findMany({

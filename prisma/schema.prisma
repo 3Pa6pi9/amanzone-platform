@@ -11,27 +11,28 @@ datasource db {
 model Product {
   id          String   @id @default(cuid())
   name        String
-  category    String
-  description String
   price       Float
-  imageUrl    String   @default("[Image]")
+  category    String
   inStock     Boolean  @default(true)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
 
 model Order {
-  id            String   @id @default(cuid())
-  totalAmount   Float
-  items         String   
-  status        String   @default("PENDING_VERIFICATION")
-  transactionId String?
-  createdAt     DateTime @default(now())
-  quantity      Int      @default(1)
-  city          String?
-  subcity       String?
-  residence     String?
-  phoneNumber   String?
+  id             String   @id @default(cuid())
+  totalAmount    Float
+  items          String   // Stored as JSON string
+  transactionId  String
+  status         String   @default("PENDING_VERIFICATION")
+  
+  // NEW DELIVERY FIELDS
+  quantity       Int      @default(1)
+  city           String?
+  subcity        String?
+  residence      String?
+  phoneNumber    String?
+  deliveryMethod String?  @default("Standard")
+  
+  createdAt      DateTime @default(now())
 }
 
 model Settings {
