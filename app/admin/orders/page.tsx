@@ -1,76 +1,37 @@
-"use client";
+// VERCEL PRODUCTION BYPASS - SINGLE DYNAMIC EXPORT
 export const dynamic = 'force-dynamic';
-import { useState, useEffect } from 'react';
-import { Receipt, CheckCircle, ShieldAlert } from 'lucide-react';
-import { approveOrder } from '../actions';
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-export default function OrdersPage() {
-  const [orders, setOrders] = useState<any[]>([]);
+// 1. The POST function (Creates orders from the storefront)
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const { amount, items, transactionId } = body;
 
-  useEffect(() => {
-    fetch('/api/checkout', { headers: { 'ngrok-skip-browser-warning': 'true' }}) 
-      .then(res => res.json())
-      .then(data => Array.isArray(data) ? setOrders(data) : setOrders([]))
-      .catch(() => setOrders([]));
-  }, []);
+    const order = await prisma.order.create({
+      data: {
+        totalAmount: amount,
+        items: JSON.stringify(items),
+        transactionId: transactionId,
+        status: 'PENDING_VERIFICATION'
+      }
+    });
 
-  const handleApprove = async (id: string) => {
-    await approveOrder(id);
-    setOrders(orders.map(o => o.id === id ? { ...o, status: 'FUNDS_APPROVED' } : o));
-  };
+    return NextResponse.json({ success: true, order });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to process checkout" }, { status: 500 });
+  }
+}
 
-  return (
-    <div className="w-full max-w-6xl mx-auto min-h-screen bg-slate-950 p-4 md:p-8 text-slate-300 rounded-3xl border border-slate-800 shadow-2xl">
-      <div className="mb-8 border-b border-slate-800 pb-4">
-        <h1 className="text-3xl font-black text-white tracking-tight">TRANSACTION LEDGER</h1>
-        <p className="text-emerald-500 font-mono text-xs mt-1">Live Financial Verification</p>
-      </div>
-
-      <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-inner">
-        <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 uppercase tracking-widest">
-          <Receipt className="text-orange-400" size={18} /> Order History
-        </h2>
-        {orders.length === 0 ? (
-          <div className="py-16 text-center text-slate-500 border border-dashed border-slate-700 rounded-xl bg-slate-950/50 font-mono text-xs">No orders detected.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-800 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-                  <th className="py-3 px-2">Order_ID</th>
-                  <th className="py-3 px-2">Total_Value</th>
-                  <th className="py-3 px-2">Tx_Reference</th>
-                  <th className="py-3 px-2">Status</th>
-                  <th className="py-3 px-2 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {orders.map((order) => (
-                  <tr key={order.id} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
-                    <td className="py-4 px-2 font-mono text-xs text-slate-400">{order.id.slice(-8)}</td>
-                    <td className="py-4 px-2 font-bold text-white">{order.totalAmount.toLocaleString()} ETB</td>
-                    <td className="py-4 px-2 font-mono text-cyan-400 text-xs bg-slate-950/50 rounded px-2">{order.transactionId || 'N/A'}</td>
-                    <td className="py-4 px-2">
-                      {order.status === 'FUNDS_APPROVED' ? (
-                        <span className="flex items-center gap-1 text-emerald-400 text-[10px] uppercase font-bold tracking-widest"><CheckCircle size={12}/> APPROVED</span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-orange-400 text-[10px] uppercase font-bold tracking-widest"><ShieldAlert size={12}/> PENDING</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-2 text-right">
-                      {order.status !== 'FUNDS_APPROVED' && (
-                        <button onClick={() => handleApprove(order.id)} className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-black px-3 py-1.5 rounded font-mono text-[9px] uppercase tracking-widest transition-all">
-                          Verify Funds
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+// 2. The NEW GET function (Retrieves orders for the Admin Dashboard)
+export async function GET() {
+  try {
+    const orders = await prisma.order.findMany({
+      orderBy: { createdAt: 'desc' } // Shows newest orders first
+    });
+    return NextResponse.json(orders);
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+  }
 }
