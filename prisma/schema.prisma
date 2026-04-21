@@ -39,13 +39,6 @@ model Settings {
   storeName      String @default("AmanZone")
   slogan         String @default("Wholesale & B2B Construction Supply")
   logoUrl        String @default("")
-  masterPasscode String @default("AmanZone2026") 
-}
-model Settings {
-  id             String @id @default("default")
-  storeName      String
-  slogan         String
-  logoUrl        String
-  masterPasscode String
+  masterPasscode String @default("AmanZone2026")
   heroHeading    String @default("YOUR RELIABLE SOURCE OF...")
 }

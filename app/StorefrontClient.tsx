@@ -5,7 +5,7 @@ import { Zap, ShieldCheck, Trash2, XCircle, FileText, Send, X } from 'lucide-rea
 import { useCartStore } from '@/store/cartStore';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-
+import CheckoutForm from '@/components/CheckoutForm';
 export default function StorefrontClient({ initialInventory, settings }: { initialInventory: any[], settings: any }) {
   const cartStore = useCartStore();
   const items = cartStore?.items || [];
