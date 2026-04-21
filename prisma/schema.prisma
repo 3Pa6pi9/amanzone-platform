@@ -1,45 +1,24 @@
-generator client {
-  provider = "prisma-client-js"
-}
+// /prisma/schema.prisma
 
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+// ... your existing generator and datasource blocks ...
+
+model Order {
+  id           String   @id @default(cuid())
+  // ... your existing fields (productId, amount, etc.) ...
+  
+  // New fields required for the missing checkout flow
+  customerName String?
+  phone        String?
+  city         String?
+  address      String?
+  
+  createdAt    DateTime @default(now())
 }
 
 model Product {
   id          String   @id @default(cuid())
   name        String
-  price       Float
-  category    String
-  inStock     Boolean  @default(true)
-  createdAt   DateTime @default(now())
-}
-
-model Order {
-  id             String   @id @default(cuid())
-  totalAmount    Float
-  items          String   // Stored as JSON string
-  transactionId  String
-  status         String   @default("PENDING_VERIFICATION")
-  
-  // NEW DELIVERY FIELDS
-  quantity       Int      @default(1)
-  city           String?
-  subcity        String?
-  residence      String?
-  phoneNumber    String?
-  deliveryMethod String?  @default("Standard")
-  
-  createdAt      DateTime @default(now())
-}
-
-model Settings {
-  id             String @id @default("default")
-  storeName      String @default("AmanZone")
-  slogan         String @default("Wholesale & B2B Construction Supply")
-  logoUrl        String @default("")
-  masterPasscode String @default("AmanZone2026")
-  heroHeading    String @default("YOUR RELIABLE SOURCE OF...")
+  type        String
+  value       Float
+  imageUrl    String?  // Ensure this exists to save the uploaded image link
 }
