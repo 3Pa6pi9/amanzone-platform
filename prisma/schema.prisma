@@ -27,6 +27,11 @@ model Order {
   status        String   @default("PENDING_VERIFICATION")
   transactionId String?
   createdAt     DateTime @default(now())
+  quantity      Int      @default(1)
+  city          String?
+  subcity       String?
+  residence     String?
+  phoneNumber   String?
 }
 
 model Settings {
