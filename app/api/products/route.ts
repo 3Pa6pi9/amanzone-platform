@@ -10,11 +10,12 @@ export async function GET() {
       orderBy: { createdAt: 'desc' }
     });
     return NextResponse.json(products);
-  } catch (error) {
-    console.error("Inventory Fetch Error:", error);
-    return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
+    } catch (error) {
+    // This line forces Vercel to print the exact reason it crashed!
+    console.error("DATABASE CRASH REASON:", error); 
+    return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
   }
-}
+
 
 export async function POST(req: Request) {
   try {
