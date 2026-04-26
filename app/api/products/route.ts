@@ -22,13 +22,13 @@ export async function POST(req: Request) {
     const { name, price, category, imageUrl } = body;
 
     const newProduct = await prisma.product.create({
-      data: {
-        name: name,
-        price: Number(price),
-        category: category, // Using category, NOT type!
-        imageUrl: imageUrl
-      }
-    });
+  data: {
+    name: name,
+    value: Number(price),   // Tells Prisma to save the 'price' into the 'value' column
+    type: category,         // Tells Prisma to save the 'category' into the 'type' column
+    imageUrl: imageUrl
+  }
+});
 
     return NextResponse.json({ success: true, product: newProduct });
   } catch (error) {
