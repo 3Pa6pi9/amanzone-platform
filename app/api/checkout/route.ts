@@ -1,43 +1,65 @@
-// VERCEL & RENDER PRODUCTION BYPASS - SINGLE DYNAMIC EXPORT
-export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import prismadb from "@/lib/prismadb";
+import axios from "axios";
 
-// 1. POST: Creates orders from the storefront
+// Forces the route to be dynamic to avoid Vercel build errors
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { amount, items, transactionId, quantity, city, subcity, residence, phone, deliveryMethod } = body;
+    const { productIds, phone, city, subcity, residence, amount } = await req.json();
 
-    const order = await prisma.order.create({
+    if (!productIds || productIds.length === 0) {
+      return new NextResponse("Product IDs are required", { status: 400 });
+    }
+
+    // 1. Create the Order in your database first
+    const order = await prismadb.order.create({
       data: {
-        totalAmount: amount,
-        items: JSON.stringify(items),
-        transactionId: transactionId,
-        status: 'PENDING_VERIFICATION',
-        quantity: quantity,
-        city: city,
-        subcity: subcity,
-        residence: residence,
-        phoneNumber: phone,
-        deliveryMethod: deliveryMethod
+        isPaid: false,
+        phone: phone,
+        // Combining subcity and residence into the address field
+        address: `Subcity: ${subcity}, Residence: ${residence}, City: ${city}`,
+        orderItems: {
+          create: productIds.map((productId: string) => ({
+            product: {
+              connect: { id: productId }
+            }
+          }))
+        }
       }
     });
 
-    return NextResponse.json({ success: true, order });
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to process checkout" }, { status: 500 });
-  }
-}
+    // 2. Initialize Chapa Payment
+    const CHAPA_SECRET_KEY = process.env.CHAPA_SECRET_KEY;
+    
+    const chapaResponse = await axios.post(
+      "https://api.chapa.co/v1/transaction/initialize",
+      {
+        amount: amount,
+        currency: "ETB",
+        phone_number: phone,
+        tx_ref: `order_${order.id}`,
+        callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook`,
+        return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/cart?success=1`,
+        customization: {
+          title: "AmanZone Order",
+          description: `Payment for Order #${order.id}`
+        }
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${CHAPA_SECRET_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
 
-// 2. GET: Retrieves orders for the Admin Dashboard
-export async function GET() {
-  try {
-    const orders = await prisma.order.findMany({
-      orderBy: { createdAt: 'desc' }
-    });
-    return NextResponse.json(orders);
+    // 3. Return the payment URL to the frontend
+    return NextResponse.json({ url: chapaResponse.data.data.checkout_url });
+
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+    console.error("[CHECKOUT_POST]", error);
+    return new NextResponse("Internal error", { status: 500 });
   }
 }
